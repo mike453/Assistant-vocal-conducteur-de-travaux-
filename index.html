@@ -57,6 +57,17 @@
             font-weight: bold;
         }
 
+        #instructions {
+            background-color: #ffffe0; /* couleur de fond jaune clair pour attirer l'attention */
+            border: 1px solid #ffd700; /* bordure dorée */
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2); /* ombre légère pour un effet en relief */
+            display: inline-block;
+            max-width: 600px; /* pour éviter que le texte ne soit trop étendu sur les grands écrans */
+        }
+
         @media (max-width: 600px) {
             body, button {
                 font-size: 14px;
@@ -66,6 +77,9 @@
 </head>
 <body>
     <h1>Relevez les épaisseurs</h1>
+    <div id="instructions">
+        <p>Pour les nombres décimaux, veuillez prononcer "point". Par exemple, dites "neuf point cinq" pour "9.5".</p>
+    </div>
     <label for="lang-select">Choisissez une langue :</label>
     <select id="lang-select">
         <option value="fr-FR">Français</option>
@@ -106,44 +120,38 @@
             document.getElementById("result").innerText = "";
             document.body.classList.remove("listening");
         };
-recognition.onresult = function(event) {
-    var interimTranscript = '';
-    for (var i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-            var result = event.results[i][0].transcript;
-            // Élargir la regex pour couvrir les cas avec des espaces autour du mot "virgule"
-            result = result.replace(/\svirgule\s/g, '.');
-            // Si "virgule" est utilisé sans espace (ex: "4virgule5"), le remplacer aussi
-            result = result.replace(/virgule/g, '.');
-            // Extraire les nombres à l'aide de la regex améliorée
-            var matches = result.match(/[+-]?([0-9]*[.])?[0-9]+/g);
-            if (matches) {
-                matches.forEach(function(match) {
-                    var valeur = parseFloat(match);
-                    if (!isNaN(valeur)) {
-                        mesures.push(valeur);
-                        addValueToList(valeur);
+
+        recognition.onresult = function(event) {
+            var interimTranscript = '';
+            for (var i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    var result = event.results[i][0].transcript;
+                    result = result.replace(/\svirgule\s/g, '.');
+                    result = result.replace(/virgule/g, '.');
+                    var matches = result.match(/[+-]?([0-9]*[.])?[0-9]+/g);
+                    if (matches) {
+                        matches.forEach(function(match) {
+                            var valeur = parseFloat(match);
+                            if (!isNaN(valeur)) {
+                                mesures.push(valeur);
+                                addValueToList(valeur);
+                            }
+                        });
                     }
-                });
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
+                }
             }
-        } else {
-            interimTranscript += event.results[i][0].transcript;
+            console.log("Interim: " + interimTranscript);
+        };
+
+        function addValueToList(value) {
+            var liste = document.getElementById("valeurs").getElementsByTagName("ol")[0];
+            var node = document.createElement("LI");
+            var textnode = document.createTextNode(value);
+            node.appendChild(textnode);
+            liste.appendChild(node);
         }
-    }
-    console.log("Interim: " + interimTranscript);
-};
-
-
-
-function addValueToList(value) {
-    var liste = document.getElementById("valeurs").getElementsByTagName("ol")[0];
-    var node = document.createElement("LI");
-    var textnode = document.createTextNode(value);
-    node.appendChild(textnode);
-    liste.appendChild(node);
-}
-
-
 
         recognition.onend = function() {
             var somme = mesures.reduce((a, b) => a + b, 0);
