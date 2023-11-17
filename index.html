@@ -106,25 +106,33 @@
             document.getElementById("result").innerText = "";
             document.body.classList.remove("listening");
         };
-
 recognition.onresult = function(event) {
     var interimTranscript = '';
     for (var i = event.resultIndex; i < event.results.length; ++i) {
-        // Vérifiez si le résultat est intermédiaire ou final
         if (event.results[i].isFinal) {
             var result = event.results[i][0].transcript;
-            result = result.replace(/virgule/g, '.'); // Remplace "virgule" par un point décimal
-            var valeur = parseFloat(result);
-            if (!isNaN(valeur)) {
-                mesures.push(valeur);
-                addValueToList(valeur); // Ajoutez la valeur à la liste
+            // Élargir la regex pour couvrir les cas avec des espaces autour du mot "virgule"
+            result = result.replace(/\svirgule\s/g, '.');
+            // Si "virgule" est utilisé sans espace (ex: "4virgule5"), le remplacer aussi
+            result = result.replace(/virgule/g, '.');
+            // Extraire les nombres à l'aide de la regex améliorée
+            var matches = result.match(/[+-]?([0-9]*[.])?[0-9]+/g);
+            if (matches) {
+                matches.forEach(function(match) {
+                    var valeur = parseFloat(match);
+                    if (!isNaN(valeur)) {
+                        mesures.push(valeur);
+                        addValueToList(valeur);
+                    }
+                });
             }
         } else {
             interimTranscript += event.results[i][0].transcript;
         }
     }
-    // Affichez le transcript intermédiaire si nécessaire
     console.log("Interim: " + interimTranscript);
+};
+
 };
 
 function addValueToList(value) {
