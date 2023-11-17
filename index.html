@@ -107,22 +107,26 @@
             document.body.classList.remove("listening");
         };
 
-        recognition.onresult = function(event) {
-            var liste = document.getElementById("valeurs").getElementsByTagName("ol")[0];
-            var lastResult = event.results[event.resultIndex][0].transcript;
-            
-            var matches = lastResult.match(/[+-]?([0-9]*[.])?[0-9]+/g);
-            if (matches) {
-                matches.forEach(function(match) {
-                    var valeur = parseFloat(match);
-                    mesures.push(valeur);
-                    var node = document.createElement("LI");
-                    var textnode = document.createTextNode(valeur);
-                    node.appendChild(textnode);
-                    liste.appendChild(node);
-                });
+  recognition.onresult = function(event) {
+    var liste = document.getElementById("valeurs").getElementsByTagName("ol")[0];
+    var lastResult = event.results[event.resultIndex][0].transcript;
+    // Remplacez "virgule" par "." pour la reconnaissance des décimales en français.
+    lastResult = lastResult.replace(/virgule/g, '.');
+    var matches = lastResult.match(/[+-]?([0-9]*[.])?[0-9]+/g);
+    if (matches) {
+        matches.forEach(function(match) {
+            var valeur = parseFloat(match);
+            if (!isNaN(valeur)) {
+                mesures.push(valeur);
+                var node = document.createElement("LI");
+                var textnode = document.createTextNode(valeur);
+                node.appendChild(textnode);
+                liste.appendChild(node);
             }
-        };
+        });
+    }
+};
+
 
         recognition.onend = function() {
             var somme = mesures.reduce((a, b) => a + b, 0);
