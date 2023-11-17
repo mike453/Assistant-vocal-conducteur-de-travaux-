@@ -79,14 +79,12 @@
     <p id="result"></p>
     <script>
         var recognition = new webkitSpeechRecognition();
-        var mesures = [];
-        var selectedLang = document.getElementById("lang-select").value;
-        recognition.lang = selectedLang;
+        recognition.lang = "fr-FR";
         recognition.continuous = true;
+        var mesures = [];
 
         document.getElementById("lang-select").onchange = function() {
-            selectedLang = this.value;
-            recognition.lang = selectedLang;
+            recognition.lang = this.value;
         };
 
         document.getElementById("start").onclick = function() {
@@ -112,14 +110,17 @@
         recognition.onresult = function(event) {
             var liste = document.getElementById("valeurs").getElementsByTagName("ol")[0];
             var lastResult = event.results[event.resultIndex][0].transcript;
-            var valeur = parseFloat(lastResult);
-
-            if (!isNaN(valeur)) {
-                mesures.push(valeur);
-                var node = document.createElement("LI");
-                var textnode = document.createTextNode(valeur);
-                node.appendChild(textnode);
-                liste.appendChild(node);
+            
+            var matches = lastResult.match(/[+-]?([0-9]*[.])?[0-9]+/g);
+            if (matches) {
+                matches.forEach(function(match) {
+                    var valeur = parseFloat(match);
+                    mesures.push(valeur);
+                    var node = document.createElement("LI");
+                    var textnode = document.createTextNode(valeur);
+                    node.appendChild(textnode);
+                    liste.appendChild(node);
+                });
             }
         };
 
