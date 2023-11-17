@@ -5,18 +5,18 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #e6f2ff; /* couleur de fond bleu clair */
-            color: #005073; /* couleur de texte bleu foncé */
+            background-color: #e6f2ff; /* Fond bleu clair */
+            color: #005073; /* Texte bleu foncé */
             text-align: center;
             padding: 20px;
         }
 
         h1 {
-            color: #008080; /* couleur de titre vert */
+            color: #008080; /* Titre vert */
         }
 
         button {
-            background-color: #4CAF50; /* couleur de fond vert */
+            background-color: #4CAF50; /* Bouton vert */
             color: white;
             border: none;
             padding: 10px 20px;
@@ -27,6 +27,21 @@
             margin: 4px 2px;
             cursor: pointer;
             border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049; /* Changement de couleur au survol */
+        }
+
+        #valeurs {
+            text-align: left;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        ol {
+            padding-left: 20px;
         }
 
         #result {
@@ -49,30 +64,56 @@
 </head>
 <body>
     <h1>Relevez les épaisseurs</h1>
+    <label for="lang-select">Choisissez une langue :</label>
+    <select id="lang-select">
+        <option value="fr-FR">Français</option>
+        <option value="pt-PT">Portugais</option>
+        <option value="ro-RO">Roumain</option>
+    </select>
     <button id="start">Commencer l'écoute</button>
     <button id="stop">Terminer</button>
+    <button id="reset">Réinitialiser</button>
+    <div id="valeurs"></div>
     <p id="result"></p>
     <script>
         var recognition = new webkitSpeechRecognition();
-        recognition.lang = "fr-FR";
+        var mesures = [];
+        var selectedLang = document.getElementById("lang-select").value;
+        recognition.lang = selectedLang;
         recognition.continuous = true;
 
-        var mesures = [];
+        document.getElementById("lang-select").onchange = function() {
+            selectedLang = this.value;
+            recognition.lang = selectedLang;
+        };
 
         document.getElementById("start").onclick = function() {
             recognition.start();
+            document.getElementById("valeurs").innerHTML = "<h2>Valeurs Dictées:</h2><ol></ol>";
+            document.getElementById("result").innerText = "";
         };
 
         document.getElementById("stop").onclick = function() {
             recognition.stop();
         };
 
+        document.getElementById("reset").onclick = function() {
+            mesures = [];
+            document.getElementById("valeurs").innerHTML = "";
+            document.getElementById("result").innerText = "";
+        };
+
         recognition.onresult = function(event) {
+            var liste = document.getElementById("valeurs").getElementsByTagName("ol")[0];
             for (var i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
                     var valeur = parseFloat(event.results[i][0].transcript);
                     if (!isNaN(valeur)) {
                         mesures.push(valeur);
+                        var node = document.createElement("LI");
+                        var textnode = document.createTextNode(valeur);
+                        node.appendChild(textnode);
+                        liste.appendChild(node);
                     }
                 }
             }
@@ -81,7 +122,7 @@
         recognition.onend = function() {
             var somme = mesures.reduce((a, b) => a + b, 0);
             var moyenne = somme / mesures.length;
-            document.getElementById("result").innerText = "Moyenne: " + moyenne;
+            document.getElementById("result").innerText = "Moyenne: " + moyenne.toFixed(2);
         };
     </script>
 </body>
