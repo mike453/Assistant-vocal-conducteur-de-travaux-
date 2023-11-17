@@ -107,7 +107,7 @@
             document.body.classList.remove("listening");
         };
 
-  recognition.onresult = function(event) {
+recognition.onresult = function(event) {
     var liste = document.getElementById("valeurs").getElementsByTagName("ol")[0];
     var lastResult = event.results[event.resultIndex][0].transcript;
     // Remplacez "virgule" par "." pour la reconnaissance des décimales en français.
@@ -126,6 +126,7 @@
         });
     }
 };
+
 
 
         recognition.onend = function() {
