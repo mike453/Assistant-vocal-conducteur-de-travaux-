@@ -108,21 +108,33 @@
         };
 
 recognition.onresult = function(event) {
-    var liste = document.getElementById("valeurs").getElementsByTagName("ol")[0];
-    var lastResult = event.results[event.resultIndex][0].transcript;
-    // Remplacez "virgule" par "." pour la reconnaissance des décimales en français.
-    lastResult = lastResult.replace(/virgule/g, '.');
-    var matches = lastResult.match(/[+-]?([0-9]*[.])?[0-9]+/g);
-    if (matches) {
-        matches.forEach(function(match) {
-            var valeur = parseFloat(match);
+    var interimTranscript = '';
+    for (var i = event.resultIndex; i < event.results.length; ++i) {
+        // Vérifiez si le résultat est intermédiaire ou final
+        if (event.results[i].isFinal) {
+            var result = event.results[i][0].transcript;
+            result = result.replace(/virgule/g, '.'); // Remplace "virgule" par un point décimal
+            var valeur = parseFloat(result);
             if (!isNaN(valeur)) {
                 mesures.push(valeur);
-                var node = document.createElement("LI");
-                var textnode = document.createTextNode(valeur);
-                node.appendChild(textnode);
-                liste.appendChild(node);
+                addValueToList(valeur); // Ajoutez la valeur à la liste
             }
+        } else {
+            interimTranscript += event.results[i][0].transcript;
+        }
+    }
+    // Affichez le transcript intermédiaire si nécessaire
+    console.log("Interim: " + interimTranscript);
+};
+
+function addValueToList(value) {
+    var liste = document.getElementById("valeurs").getElementsByTagName("ol")[0];
+    var node = document.createElement("LI");
+    var textnode = document.createTextNode(value);
+    node.appendChild(textnode);
+    liste.appendChild(node);
+}
+
         });
     }
 };
