@@ -4,39 +4,46 @@
     <title>Reconnaissance Vocale pour Conducteur de Travaux</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #e6f2ff; /* Fond bleu clair */
-            color: #005073; /* Texte bleu foncé */
+            font-family: 'Arial', sans-serif;
+            background-color: #e6f2ff;
+            color: #005073;
             text-align: center;
             padding: 20px;
-        }
-
-        h1 {
-            color: #008080; /* Titre vert */
-        }
-
-        button {
-            background-color: #4CAF50; /* Bouton vert */
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 8px;
             transition: background-color 0.3s;
         }
 
+        .listening {
+            background-color: #ffcccc;
+        }
+
+        h1 {
+            color: #008080;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 4px 2px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
         button:hover {
-            background-color: #45a049; /* Changement de couleur au survol */
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        select {
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         #valeurs {
             text-align: left;
-            display: inline-block;
             margin-top: 20px;
         }
 
@@ -51,13 +58,8 @@
         }
 
         @media (max-width: 600px) {
-            body {
+            body, button {
                 font-size: 14px;
-            }
-
-            button {
-                font-size: 14px;
-                padding: 8px 16px;
             }
         }
     </style>
@@ -89,33 +91,35 @@
 
         document.getElementById("start").onclick = function() {
             recognition.start();
+            document.body.classList.add("listening");
             document.getElementById("valeurs").innerHTML = "<h2>Valeurs Dictées:</h2><ol></ol>";
             document.getElementById("result").innerText = "";
+            mesures = [];
         };
 
         document.getElementById("stop").onclick = function() {
             recognition.stop();
+            document.body.classList.remove("listening");
         };
 
         document.getElementById("reset").onclick = function() {
             mesures = [];
             document.getElementById("valeurs").innerHTML = "";
             document.getElementById("result").innerText = "";
+            document.body.classList.remove("listening");
         };
 
         recognition.onresult = function(event) {
             var liste = document.getElementById("valeurs").getElementsByTagName("ol")[0];
-            for (var i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    var valeur = parseFloat(event.results[i][0].transcript);
-                    if (!isNaN(valeur)) {
-                        mesures.push(valeur);
-                        var node = document.createElement("LI");
-                        var textnode = document.createTextNode(valeur);
-                        node.appendChild(textnode);
-                        liste.appendChild(node);
-                    }
-                }
+            var lastResult = event.results[event.resultIndex][0].transcript;
+            var valeur = parseFloat(lastResult);
+
+            if (!isNaN(valeur)) {
+                mesures.push(valeur);
+                var node = document.createElement("LI");
+                var textnode = document.createTextNode(valeur);
+                node.appendChild(textnode);
+                liste.appendChild(node);
             }
         };
 
