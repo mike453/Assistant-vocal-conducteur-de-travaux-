@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reconnaissance Vocale pour Conducteur de Travaux</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6f2ff; /* couleur de fond bleu clair */
+            color: #005073; /* couleur de texte bleu foncé */
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #008080; /* couleur de titre vert */
+        }
+
+        button {
+            background-color: #4CAF50; /* couleur de fond vert */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                font-size: 14px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Relevez les épaisseurs</h1>
+    <button id="start">Commencer l'écoute</button>
+    <button id="stop">Terminer</button>
+    <p id="result"></p>
+    <script>
+        var recognition = new webkitSpeechRecognition();
+        recognition.lang = "fr-FR";
+        recognition.continuous = true;
+
+        var mesures = [];
+
+        document.getElementById("start").onclick = function() {
+            recognition.start();
+        };
+
+        document.getElementById("stop").onclick = function() {
+            recognition.stop();
+        };
+
+        recognition.onresult = function(event) {
+            for (var i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    var valeur = parseFloat(event.results[i][0].transcript);
+                    if (!isNaN(valeur)) {
+                        mesures.push(valeur);
+                    }
+                }
+            }
+        };
+
+        recognition.onend = function() {
+            var somme = mesures.reduce((a, b) => a + b, 0);
+            var moyenne = somme / mesures.length;
+            document.getElementById("result").innerText = "Moyenne: " + moyenne;
+        };
+    </script>
+</body>
+</html>
